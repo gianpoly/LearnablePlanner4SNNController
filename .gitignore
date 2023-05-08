@@ -1,0 +1,9 @@
+*.bmp
+*.png
+*.svg
+*.txt
+*.zip
+*.amc
+*.asf
+
+/data
