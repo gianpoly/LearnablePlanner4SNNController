@@ -99,6 +99,11 @@ class MotionSequenceDataset():
         # Oversample triggers
         for _ in range(oversampling):
             triggers = [oversample_trigger_list(t) for t in triggers]
+        
+        # Oversample joint 2 from CMU dataset to accurately capture translation of the skeleton
+        if oversampling < 5:
+            for _ in range(5):
+                triggers[2] = oversample_trigger_list(triggers[2])
 
         return derivs, triggers
 

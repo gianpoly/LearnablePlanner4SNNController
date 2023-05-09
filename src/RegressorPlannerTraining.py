@@ -38,6 +38,11 @@ def train_regressor(motion_file, oversampling, hidden_neurons):
 
     plt.figure()
     plt.plot(losses)
+    plt.grid()
+    plt.ylim([0, 0.1])
+    plt.ylabel("MSE Loss")
+    plt.xlabel("# Epochs")
+    plt.savefig(f'./figs/Loss_hid{net.hidden_neurons}_ov{dataset.oversampling}.svg')
     plt.show()
 
     # Plot trained vs target comparison
@@ -50,6 +55,7 @@ def train_regressor(motion_file, oversampling, hidden_neurons):
         axs[joint].plot(Y_target[:, joint].detach().numpy())
         axs[joint].plot(Y[:, joint].detach().numpy())
         axs[joint].set_ylim([-1, 1])
+        axs[joint].text(0.5, -0.9, f"Joint {joint}")
     plt.show()
 
     PATH = f"./models/Regressor_hid{net.hidden_neurons}_ov{dataset.oversampling}.pt"
@@ -83,5 +89,5 @@ def test_regressor(motion_file, model_path):
     print(f'Error is: {error}')
 
 if __name__ == "__main__":
-    # train_regressor("./data/walk.amc", oversampling=5, hidden_neurons=128)
-    test_regressor(motion_file="./data/walk.amc", model_path="./models/Regressor_hid128_ov0.pt")
+    train_regressor("./data/walk.amc", oversampling=0, hidden_neurons=64)
+    # test_regressor(motion_file="./data/walk.amc", model_path="./models/Regressor_hid128_ov0.pt")
