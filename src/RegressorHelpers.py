@@ -12,10 +12,11 @@ from dataset_utils import zero_crossing, estim_deriv, oversample_trigger_list
 
 class RegressorNet(nn.Module):
     def __init__(self, input_size, output_size):
+        hidden_neurons = 128
         super(RegressorNet, self).__init__()
-        self.fc1 = nn.Linear(input_size, 64)
-        self.fc2 = nn.Linear(64, 64)
-        self.fc3 = nn.Linear(64, output_size)
+        self.fc1 = nn.Linear(input_size, hidden_neurons)
+        self.fc2 = nn.Linear(hidden_neurons, hidden_neurons)
+        self.fc3 = nn.Linear(hidden_neurons, output_size)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
