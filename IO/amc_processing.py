@@ -87,7 +87,6 @@ def txt2amc(sequence_path, save_path):
 def construct_CMU_train_set(sequence_path, save_path):
     """
     Generate training set for the planner method
-    Chop motion sequence to a short duration
     :param sequence_path: Path to the *.amc file
     :param save_path: Path where we save the *.txt file that will be used to train the planner 
 

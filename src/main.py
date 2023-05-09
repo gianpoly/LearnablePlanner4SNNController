@@ -1,7 +1,3 @@
-import sys
-sys.path.append('./IO')
-from amc_processing import construct_CMU_train_set
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,14 +6,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 
-from RegressorNet import RegressorNet
+from RegressorHelpers import RegressorNet, MotionSequenceDataset
 
 recording_file="./data/walk.amc"
-construct_CMU_train_set(recording_file, './data/training_sequence.txt')
+dataset = MotionSequenceDataset(recording_file)
+print(dataset.X.shape)
+print(dataset.Y.shape)
 
-recording = './data/training_sequence.txt'
-motion_seq = np.loadtxt(recording)
-print(motion_seq.shape)
 
 x = torch.linspace(-5, 5, 100).view(100, 1)
 y_target = np.zeros((100, 1), dtype=np.float32)
@@ -46,7 +41,7 @@ for i in range(epochs):
     loss.backward()
     optimizer.step()
 
-    if i % int(epochs/10) == 0:
+    if i % int(epochs/4) == 0:
         plt.figure()
         plt.plot(losses)
         plt.show()
