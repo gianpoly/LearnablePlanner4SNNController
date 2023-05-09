@@ -70,24 +70,22 @@ def test_regressor(motion_file, model_path):
 
     dataset = MotionSequenceDataset(recording_file, oversampling=oversampling)
 
-    X = torch.tensor(dataset.X, dtype=torch.float32)
-    Y_target = torch.tensor(dataset.Y, dtype=torch.float32)
-
-    net = RegressorNet(input_size=X.size(dim=1), hidden_size=hidden_neurons, output_size=Y_target.size(dim=1))
+    net = RegressorNet(input_size=dataset.X.shape[1], hidden_size=hidden_neurons, output_size=dataset.Y.shape[1])
     net.load_state_dict(torch.load(model_path))
     net.eval()
 
     # Plot network output at specific frame and compare with target
-    X_test = torch.tensor(dataset.X[10, :], dtype=torch.float32)
+    query_frame = 10
+    X_test = torch.tensor(dataset.X[query_frame, :], dtype=torch.float32)
     print(f'Input size is: {X_test.size(0)}')
-    Y_test = torch.tensor(dataset.Y[10, :], dtype=torch.float32)
+    Y_test = torch.tensor(dataset.Y[query_frame, :], dtype=torch.float32)
     print(f'Target size is: {Y_test.size(0)}')
     with torch.no_grad():
         Y_pred = net(X_test)
     print(f'Output size is: {Y_pred.size(0)}')
     error = (Y_test - Y_pred)**2
-    print(f'Error is: {error}')
+    print(f'Error is: {error.numpy().mean()}')
 
 if __name__ == "__main__":
-    train_regressor("./data/walk.amc", oversampling=0, hidden_neurons=64)
-    # test_regressor(motion_file="./data/walk.amc", model_path="./models/Regressor_hid128_ov0.pt")
+    # train_regressor("./data/walk.amc", oversampling=0, hidden_neurons=64)
+    test_regressor(motion_file="./data/walk.amc", model_path="./models/Regressor_hid128_ov0.pt")
