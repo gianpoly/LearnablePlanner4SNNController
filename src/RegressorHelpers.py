@@ -11,12 +11,12 @@ from copy import deepcopy
 from dataset_utils import zero_crossing, estim_deriv, oversample_trigger_list
 
 class RegressorNet(nn.Module):
-    def __init__(self, input_size, output_size):
-        hidden_neurons = 128
+    def __init__(self, input_size, hidden_size, output_size):
+        self.hidden_neurons = hidden_size
         super(RegressorNet, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_neurons)
-        self.fc2 = nn.Linear(hidden_neurons, hidden_neurons)
-        self.fc3 = nn.Linear(hidden_neurons, output_size)
+        self.fc1 = nn.Linear(input_size, self.hidden_neurons)
+        self.fc2 = nn.Linear(self.hidden_neurons, self.hidden_neurons)
+        self.fc3 = nn.Linear(self.hidden_neurons, output_size)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -26,7 +26,8 @@ class RegressorNet(nn.Module):
 
 
 class MotionSequenceDataset():
-    def __init__(self, recording_file) -> None:
+    def __init__(self, recording_file, oversampling) -> None:
+        self.oversampling = oversampling
         # Read amc file and create txt equivalent in /data foler
         construct_CMU_train_set(recording_file, './data/training_sequence.txt')
 
@@ -34,7 +35,7 @@ class MotionSequenceDataset():
         self.motion_seq = self.preprocess_recorded_motion_seq('./data/training_sequence.txt')
 
         # Specify trigger points
-        self.derivs, self.trigs = self.set_triggers(oversampling=0)
+        self.derivs, self.trigs = self.set_triggers(oversampling=oversampling)
 
         # Specify target angles
         self.targets = self.set_targets()
