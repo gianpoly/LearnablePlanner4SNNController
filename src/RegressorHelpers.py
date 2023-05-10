@@ -32,7 +32,7 @@ class MotionSequenceDataset():
         construct_CMU_train_set(recording_file, './data/training_sequence.txt')
 
         # Read txt file and preprocess (normalize)
-        self.motion_seq = self.preprocess_recorded_motion_seq('./data/training_sequence.txt')
+        self.motion_seq, self.norm_fact = self.preprocess_recorded_motion_seq('./data/training_sequence.txt')
 
         # Specify trigger points
         self.derivs, self.trigs = self.set_triggers(oversampling=oversampling)
@@ -63,9 +63,10 @@ class MotionSequenceDataset():
             # motion_seq[:, idle] = motion_seq[0, idle]
 
             # Normalize motion sequence data to feed the NN
-            motion_seq = motion_seq/np.abs(motion_seq).max()
+            norm_factor = np.abs(motion_seq).max()
+            motion_seq = motion_seq/norm_factor
             
-            return motion_seq
+            return motion_seq, norm_factor
     
     def set_triggers(self, oversampling):
         """

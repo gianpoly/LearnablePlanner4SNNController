@@ -58,7 +58,7 @@ def train_regressor(motion_file, oversampling, hidden_neurons):
         axs[joint].text(0.5, -0.9, f"Joint {joint}")
     plt.show()
 
-    PATH = f"./models/Regressor_hid{net.hidden_neurons}_ov{dataset.oversampling}.pt"
+    PATH = f"./models/planner/Regressor_hid{net.hidden_neurons}_ov{dataset.oversampling}.pt"
     torch.save(net.state_dict(), PATH)
 
 def setup_regressor_testing_env(motion_file, model_path):
@@ -135,4 +135,4 @@ def sample_regressor(motion_file, model_path, sampling_rate):
 
 if __name__ == "__main__":
     # train_regressor("./data/walk.amc", oversampling=0, hidden_neurons=256)
-    sample_regressor(motion_file="./data/walk.amc", model_path="./models/Regressor_hid128_ov5.pt", sampling_rate=7.5)
+    sample_regressor(motion_file="./data/walk.amc", model_path="./models/planner/Regressor_hid128_ov5.pt", sampling_rate=7.5)
