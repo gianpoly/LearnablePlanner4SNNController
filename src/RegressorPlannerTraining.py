@@ -98,6 +98,7 @@ def sample_regressor(motion_file, model_path, sampling_rate):
     frame_step = int(120/sampling_rate)
     query_frames = np.arange(0, dataset.X.shape[0], frame_step)
     preds = np.zeros((len(query_frames), dataset.Y.shape[1]))
+    
     for i, frame in enumerate(query_frames):
         t = time.time()
         Y = query_regressor(dataset, net, frame).numpy()
@@ -105,18 +106,33 @@ def sample_regressor(motion_file, model_path, sampling_rate):
         print(f'Query time: {dt} s')
         preds[i, :] = Y
         print(f'------------------')
-
+    
+    ctr = 0
+    preds_zh = np.zeros_like(dataset.Y)
+    for j in range(preds_zh.shape[0]):
+        if j in query_frames:
+            preds_zh[j, :] = preds[ctr, :]
+            ctr += 1
+        else:
+            preds_zh[j, :] = preds[ctr-1, :]
     fig, axs = plt.subplots(8, 8, sharex='col', sharey='row', figsize=(12, 12))
     axs = axs.flatten()
     plt.tight_layout()
     for joint in range(0, dataset.Y.shape[1]):
         axs[joint].plot(dataset.targets[:, joint])
+        # axs[joint].plot(preds_zh[:, joint])
         axs[joint].scatter(query_frames, preds[:, joint], c='r', s=2)
         axs[joint].set_ylim([-1, 1])
         axs[joint].text(0.5, -0.9, f"Joint {joint}")
     plt.show()
 
+    plt.figure()
+    plt.plot(dataset.targets[:, 51])
+    plt.plot(preds_zh[:, 51])
+    plt.scatter(query_frames, preds[:, 51], c='r', s=10)
+    plt.ylim([-1, 1])
+    plt.show()
 
 if __name__ == "__main__":
     # train_regressor("./data/walk.amc", oversampling=0, hidden_neurons=256)
-    sample_regressor(motion_file="./data/walk.amc", model_path="./models/Regressor_hid256_ov0.pt", sampling_rate=5)
+    sample_regressor(motion_file="./data/walk.amc", model_path="./models/Regressor_hid128_ov5.pt", sampling_rate=7.5)
