@@ -84,7 +84,7 @@ def txt2amc(sequence_path, save_path):
             fid.write('ltoes %f\n' % D[frame, 61])
 
 
-def construct_CMU_train_set(sequence_path, save_path):
+def build_CMU_sequence(sequence_path, save_path):
     """
     Generate training set for the planner method
     :param sequence_path: Path to the *.amc file
@@ -98,5 +98,5 @@ def construct_CMU_train_set(sequence_path, save_path):
 
 
 if __name__ == "__main__":
-    construct_CMU_train_set('./walk.amc', 'training_walk.txt')
+    build_CMU_sequence('./walk.amc', 'training_walk.txt')
     

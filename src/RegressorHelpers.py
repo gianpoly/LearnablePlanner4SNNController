@@ -1,6 +1,6 @@
 import sys
 sys.path.append('./IO')
-from amc_processing import construct_CMU_train_set
+from amc_processing import build_CMU_sequence
 
 import torch
 import torch.nn as nn
@@ -29,7 +29,7 @@ class MotionSequenceDataset():
     def __init__(self, recording_file, oversampling) -> None:
         self.oversampling = oversampling
         # Read amc file and create txt equivalent in /data foler
-        construct_CMU_train_set(recording_file, './data/training_sequence.txt')
+        build_CMU_sequence(recording_file, './data/training_sequence.txt')
 
         # Read txt file and preprocess (normalize)
         self.motion_seq, self.norm_fact = self.preprocess_recorded_motion_seq('./data/training_sequence.txt')
@@ -128,3 +128,44 @@ class MotionSequenceDataset():
 
         return targets
 
+
+def setup_regressor_testing_env(motion_file, model_path):
+    recording_file = motion_file
+    model_specs = model_path.split('_')
+
+    hidden_neurons = int(model_specs[1][3:])
+    oversampling = int(model_specs[2][2])
+
+    dataset = MotionSequenceDataset(recording_file, oversampling=oversampling)
+
+    net = RegressorNet(input_size=dataset.X.shape[1], hidden_size=hidden_neurons, output_size=dataset.Y.shape[1])
+    net.load_state_dict(torch.load(model_path))
+    net.eval()
+
+    return dataset, net
+
+
+def query_regressor(state, network):
+    # Query regressor network given the state of the character (angles and angular velocities)
+    X_test = torch.tensor(state, dtype=torch.float32)
+    print(f'Input size is: {X_test.size(0)}')
+    with torch.no_grad():
+        Y_pred = network(X_test)
+    print(f'Output size is: {Y_pred.size(0)}')
+
+    return Y_pred
+
+
+def evaluate_regressor(dataset, network, query_frame):
+    # Plot network output at specific frame and compare with target
+    X_test = torch.tensor(dataset.X[query_frame, :], dtype=torch.float32)
+    print(f'Input size is: {X_test.size(0)}')
+    Y_test = torch.tensor(dataset.Y[query_frame, :], dtype=torch.float32)
+    print(f'Target size is: {Y_test.size(0)}')
+    with torch.no_grad():
+        Y_pred = network(X_test)
+    print(f'Output size is: {Y_pred.size(0)}')
+    error = (Y_test - Y_pred)**2
+    print(f'Error is: {error.numpy().mean()}')
+
+    return Y_pred

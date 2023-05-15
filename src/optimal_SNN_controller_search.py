@@ -1,4 +1,3 @@
-import os
 import time
 from optimal_search_utils import *
 
@@ -35,6 +34,6 @@ optimal_controlled_angles_downsampled = (np.pi/180)*optimal_controlled_angles.co
 optimal_controlled_angles_downsampled = optimal_controlled_angles_downsampled[:, frame_ind]
 optimal_controlled_angles_downsampled = optimal_controlled_angles_downsampled.transpose()
 print("Size of saved array is: ", optimal_controlled_angles_downsampled.shape)
-np.savetxt("/control_angles_full.txt", optimal_controlled_angles, delimiter=",")
-np.savetxt("/control_angles.txt", optimal_controlled_angles_downsampled, delimiter=",")
-np.savetxt("/optimal_controller_specs.txt", optimal_ctrlr_IDs, delimiter=",", fmt="%i")
+np.savetxt("./data/control_angles_full.txt", optimal_controlled_angles, delimiter=",")
+np.savetxt("./data/control_angles.txt", optimal_controlled_angles_downsampled, delimiter=",")
+np.savetxt("./data/optimal_controller_specs.txt", optimal_ctrlr_IDs, delimiter=",", fmt="%i")

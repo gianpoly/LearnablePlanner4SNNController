@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 
-from RegressorHelpers import RegressorNet, MotionSequenceDataset
+from RegressorHelpers import RegressorNet, MotionSequenceDataset, setup_regressor_testing_env, evaluate_regressor
 
 def train_regressor(motion_file, oversampling, hidden_neurons):
 
@@ -61,38 +61,9 @@ def train_regressor(motion_file, oversampling, hidden_neurons):
     PATH = f"./models/planner/Regressor_hid{net.hidden_neurons}_ov{dataset.oversampling}.pt"
     torch.save(net.state_dict(), PATH)
 
-def setup_regressor_testing_env(motion_file, model_path):
-    recording_file = motion_file
-    model_specs = model_path.split('_')
 
-    hidden_neurons = int(model_specs[1][3:])
-    oversampling = int(model_specs[2][2])
-
-    dataset = MotionSequenceDataset(recording_file, oversampling=oversampling)
-
-    net = RegressorNet(input_size=dataset.X.shape[1], hidden_size=hidden_neurons, output_size=dataset.Y.shape[1])
-    net.load_state_dict(torch.load(model_path))
-    net.eval()
-
-    return dataset, net
-
-
-def query_regressor(dataset, network, query_frame):
-    # Plot network output at specific frame and compare with target
-    X_test = torch.tensor(dataset.X[query_frame, :], dtype=torch.float32)
-    print(f'Input size is: {X_test.size(0)}')
-    Y_test = torch.tensor(dataset.Y[query_frame, :], dtype=torch.float32)
-    print(f'Target size is: {Y_test.size(0)}')
-    with torch.no_grad():
-        Y_pred = network(X_test)
-    print(f'Output size is: {Y_pred.size(0)}')
-    error = (Y_test - Y_pred)**2
-    print(f'Error is: {error.numpy().mean()}')
-
-    return Y_pred
-
-
-def sample_regressor(motion_file, model_path, sampling_rate):
+def test_regressor(motion_file, model_path, sampling_rate):
+    # Sample dataset at multiple timesteps and evaluate regressor and compare with ground truth
     dataset, net = setup_regressor_testing_env(motion_file, model_path)
 
     frame_step = int(120/sampling_rate)
@@ -101,7 +72,7 @@ def sample_regressor(motion_file, model_path, sampling_rate):
     
     for i, frame in enumerate(query_frames):
         t = time.time()
-        Y = query_regressor(dataset, net, frame).numpy()
+        Y = evaluate_regressor(dataset, net, frame).numpy()
         dt = time.time() - t
         print(f'Query time: {dt} s')
         preds[i, :] = Y
@@ -135,4 +106,4 @@ def sample_regressor(motion_file, model_path, sampling_rate):
 
 if __name__ == "__main__":
     # train_regressor("./data/walk.amc", oversampling=0, hidden_neurons=256)
-    sample_regressor(motion_file="./data/walk.amc", model_path="./models/planner/Regressor_hid128_ov5.pt", sampling_rate=7.5)
+    test_regressor(motion_file="./data/walk.amc", model_path="./models/planner/Regressor_hid128_ov0.pt", sampling_rate=7.5)

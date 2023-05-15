@@ -30,7 +30,7 @@ def generate_SNN_training_set(recording, frame_rate):
     # print(angles_rescaled.shape)
 
     for joint in range(data.shape[1]):
-        f1 = interp1d(frame_times, data[:, joint], kind='cubic', fill_value='extrapolate')
+        f1 = interp1d(frame_times, data[:, joint], kind='linear', fill_value='extrapolate')
         # angles_rescaled[joint, :] = (180/np.pi)*f1(time_steps)
         angles_rescaled[joint, :] = f1(time_steps)
 
@@ -173,7 +173,13 @@ def automatic_state_sampling(avg_angles, moving_joint_threshold, deriv_window, o
     for _ in range(oversampling):
         oversampled_triggers = ((triggers[joint][1:] + triggers[joint][:-1]) / 2).astype(int)
         triggers[joint] = np.unique(np.concatenate((triggers[joint], oversampled_triggers)))
-
+    
+    # Oversample joint 2 of CMU dataset to capture translation
+    if joint == 2 and oversampling < 5:
+        for _ in range(10):
+            oversampled_triggers = ((triggers[joint][1:] + triggers[joint][:-1]) / 2).astype(int)
+            triggers[joint] = np.unique(np.concatenate((triggers[joint], oversampled_triggers)))
+            
     for kk in range(len(triggers[joint]) - 1):
         cur = avg_angles[joint, triggers[joint][kk]]
         range_min = min(avg_angles[joint, triggers[joint][kk]:triggers[joint][kk + 1]])
@@ -299,3 +305,13 @@ def search_ctrlrs_smart(joint_angle, target_angles):
                                   target_angles.reshape(1, target_angles.shape[1]), offspring_ID[0])
 
     return ctrl_angles, offspring_ID[0]
+
+
+def read_controller_specs(file_dir):
+    ctrlr_strings = open(file_dir, 'r').read().splitlines()
+    ctrlr_specs = []
+    for str in ctrlr_strings:
+        ctrlr_specs.append([int(item) for item in str.split(',') if item.isdigit()])
+    ctrlr_specs = np.array(ctrlr_specs)
+
+    return ctrlr_specs
