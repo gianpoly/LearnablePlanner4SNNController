@@ -224,7 +224,7 @@ class AdaptiveSingleDOFController:
 
 
 class AgentController:
-    def __init__(self, time_step, init_state, Speed_control=False, Facilitation=[0, 0], PSI=[0, 0], MN_pool_size=1):
+    def __init__(self, time_step, init_state, Speed_control=False, Facilitation=[0, 0], PSI=[0, 0], MN_pool_size=1, specs_list=None):
         """
         Define Agent Controller
 
@@ -234,17 +234,36 @@ class AgentController:
         self.window_v = 20  # derivative estimation window
         self.theta_inc = 0.025  # angle change step
 
-        self.DOF = len(init_state)
-        self.DOF_ctrlrs = []
-        for i in range(self.DOF):
-            self.DOF_ctrlrs.append(AdaptiveSingleDOFController(timestep=self.dt,
-                                                               v_window=self.window_v,
-                                                               dq=self.theta_inc,
-                                                               q=init_state[i],
-                                                               Speed_Control=Speed_control,
-                                                               Facilitation=Facilitation,
-                                                               PSI=PSI,
-                                                               MN_pool_size=MN_pool_size))
+        if specs_list is None:
+            self.DOF = len(init_state)
+            self.DOF_ctrlrs = []
+            for i in range(self.DOF):
+                self.DOF_ctrlrs.append(AdaptiveSingleDOFController(timestep=self.dt,
+                                                                v_window=self.window_v,
+                                                                dq=self.theta_inc,
+                                                                q=init_state[i],
+                                                                Speed_Control=Speed_control,
+                                                                Facilitation=Facilitation,
+                                                                PSI=PSI,
+                                                                MN_pool_size=MN_pool_size))
+        else:
+            self.DOF = len(init_state)
+            self.DOF_ctrlrs = []
+            for i in range(self.DOF):
+                temp = np.where((specs_list[:, 0] == i))[0]  # get the specs of the trained controller
+                if len(temp) > 0:
+                    ind = temp[0]
+                    joint_ctrlr_specs = specs_list[ind, 1:]
+                else:
+                    joint_ctrlr_specs = [0, 0, 0, 0, 0, 3]
+                self.DOF_ctrlrs.append(AdaptiveSingleDOFController(timestep=self.dt,
+                                                                v_window=self.window_v,
+                                                                dq=self.theta_inc,
+                                                                q=init_state[i],
+                                                                Speed_Control=joint_ctrlr_specs[0],
+                                                                Facilitation=joint_ctrlr_specs[1:3],
+                                                                PSI=joint_ctrlr_specs[3:5],
+                                                                MN_pool_size=joint_ctrlr_specs[5]))
 
     def update_state(self, q_des):
         """
@@ -261,7 +280,10 @@ class AgentController:
 
         :return: Vector with each entry being the state of the controller of the corresponding DOF
         """
-        return np.array([DOF_ctrlr.theta for DOF_ctrlr in self.DOF_ctrlrs])
+        # return np.array([DOF_ctrlr.theta for DOF_ctrlr in self.DOF_ctrlrs])
+        joint_angles = np.array([DOF_ctrlr.theta for DOF_ctrlr in self.DOF_ctrlrs])
+        joint_vels = np.array([DOF_ctrlr.v_theta for DOF_ctrlr in self.DOF_ctrlrs])
+        return np.concatenate((joint_angles, joint_vels))
 
 
 
