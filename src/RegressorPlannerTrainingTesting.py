@@ -104,7 +104,7 @@ def test_regressor(motion_file, model_path, sampling_rate):
     plt.ylim([-1, 1])
     plt.show()
 
-    return preds_zh
+    return preds_zh, dataset
 
 if __name__ == "__main__":
     # train_regressor("./data/walk.amc", oversampling=0, hidden_neurons=256)

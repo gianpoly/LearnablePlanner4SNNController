@@ -239,8 +239,8 @@ class Viewer:
 
 
 if __name__ == '__main__':
-  asf_path = './skeleton.asf'
-  amc_path = './walk_reconstr.amc'
+  asf_path = './data/skeleton.asf'
+  amc_path = './data/walk_reconstr.amc'
   joints = parse_asf(asf_path)
   motions = parse_amc(amc_path)
   v = Viewer(joints, motions)

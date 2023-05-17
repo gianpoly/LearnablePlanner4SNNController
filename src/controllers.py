@@ -280,10 +280,10 @@ class AgentController:
 
         :return: Vector with each entry being the state of the controller of the corresponding DOF
         """
-        # return np.array([DOF_ctrlr.theta for DOF_ctrlr in self.DOF_ctrlrs])
-        joint_angles = np.array([DOF_ctrlr.theta for DOF_ctrlr in self.DOF_ctrlrs])
-        joint_vels = np.array([DOF_ctrlr.v_theta for DOF_ctrlr in self.DOF_ctrlrs])
-        return np.concatenate((joint_angles, joint_vels))
+        return np.array([DOF_ctrlr.theta for DOF_ctrlr in self.DOF_ctrlrs])
+        # joint_angles = np.array([DOF_ctrlr.theta for DOF_ctrlr in self.DOF_ctrlrs])
+        # joint_vels = np.array([DOF_ctrlr.v_theta for DOF_ctrlr in self.DOF_ctrlrs])
+        # return np.concatenate((joint_angles, joint_vels))
 
 
 

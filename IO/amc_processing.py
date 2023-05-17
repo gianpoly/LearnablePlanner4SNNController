@@ -41,7 +41,7 @@ def txt2amc(sequence_path, save_path):
     :param save_path: Path where the *.amc file will be saved
     """
 
-    D = np.loadtxt(sequence_path)
+    D = np.loadtxt(sequence_path, delimiter=',')
 
     frames, DOF = D.shape
 

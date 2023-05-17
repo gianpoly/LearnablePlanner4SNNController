@@ -24,6 +24,7 @@ ts = np.arange(0, (T - dt)/dt, 1).round(2)
 SNN_char_ctrlr = AgentController(dt, ground_truth_dataset.X[0, 0:DOF_no], specs_list=SNN_ctrlr_specs)
 
 reconstr_frame_seq = np.zeros((seq_frame_len, ground_truth_dataset.X.shape[1]))
+reconstr_frame_seq[:, DOF_no:] = ground_truth_dataset.X[:, DOF_no:]
 reconstr_time_seq = np.zeros((round(seq_time_len/dt), ground_truth_dataset.X.shape[1]))
 reconstr_frame_seq[0, :] = ground_truth_dataset.X[0, :]
 reconstr_time_seq[0, :] = ground_truth_dataset.X[0, :]
@@ -48,7 +49,7 @@ for t in np.arange(1, (T - dt)/dt, 1).round(2):
 
 
       SNN_char_ctrlr.update_state(targets)  # Update SNN with new orr past targets
-      reconstr_time_seq[int(t), :] = SNN_char_ctrlr.get_state() # Save new SNN state
+      reconstr_time_seq[int(t), :DOF_no] = SNN_char_ctrlr.get_state() # Save new SNN state
 
 
 
