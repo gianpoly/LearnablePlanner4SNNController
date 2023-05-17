@@ -35,7 +35,7 @@ class MotionSequenceDataset():
         self.motion_seq, self.norm_fact = self.preprocess_recorded_motion_seq('./data/training_sequence.txt')
 
         # Specify trigger points
-        self.derivs, self.trigs = self.set_triggers(oversampling=oversampling)
+        self.derivs, self.trigs, self.derivs_norm_fact = self.set_triggers(oversampling=oversampling)
 
         # Specify target angles
         self.targets = self.set_targets()
@@ -83,7 +83,8 @@ class MotionSequenceDataset():
         derivs = estim_deriv(self.motion_seq)
 
         # Normalize speed data to feed the NN
-        derivs = derivs/np.abs(derivs).max()
+        derivs_norm_fact = np.abs(derivs).max()
+        derivs = derivs/derivs_norm_fact
         # eps = 1e-6
         # derivs = derivs/(np.abs(derivs).max(axis=0) + eps)
 
@@ -106,7 +107,7 @@ class MotionSequenceDataset():
             for _ in range(5):
                 triggers[2] = oversample_trigger_list(triggers[2])
 
-        return derivs, triggers
+        return derivs, triggers, derivs_norm_fact
 
     def set_targets(self):
         """
