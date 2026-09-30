@@ -15,7 +15,7 @@ No packaging, requirements file, test suite, or linter. Scripts are standalone a
 - `IO/` gets imported via `sys.path.append('./IO')`, which also only works from the root.
 - Modules in `src/` import each other as top-level modules (`from controllers import ...`). That works because Python puts the script's directory (`src/`) on `sys.path`.
 
-`data/`, `models/`, `figs/` and all `*.txt`/`*.amc`/`*.asf`/`*.png`/`*.svg` files are gitignored. Inputs such as `data/walk.amc` and `data/skeleton.asf`, plus trained models, must already be present locally.
+The folder structure of `data/`, `models/`, `figs/` (including `models/planner/`, `figs/SNN_joints/`, `figs/learned_SNN_joints/`) is tracked via `.gitkeep` files, but their contents are gitignored, as are all `*.txt`/`*.amc`/`*.asf`/`*.png`/`*.svg` files. The exceptions are the inputs `data/walk.amc` and `data/skeleton.asf`, which are tracked. Trained models must be generated locally.
 
 ## Pipeline (run in this order)
 

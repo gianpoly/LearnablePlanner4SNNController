@@ -107,7 +107,7 @@ def test_regressor(motion_file, model_path, sampling_rate):
     return preds_zh, dataset
 
 if __name__ == "__main__":
-    # train_regressor("./data/walk.amc", oversampling=0, hidden_neurons=256)
+    train_regressor("./data/walk.amc", oversampling=0, hidden_neurons=128)
     
-    learned_targets = test_regressor(motion_file="./data/walk.amc", model_path="./models/planner/Regressor_hid128_ov0.pt", sampling_rate=7.5)
-    np.savetxt("./data/learned_targets.txt", learned_targets, delimiter=",")
+    # learned_targets = test_regressor(motion_file="./data/walk.amc", model_path="./models/planner/Regressor_hid128_ov0.pt", sampling_rate=7.5)
+    # np.savetxt("./data/learned_targets.txt", learned_targets, delimiter=",")

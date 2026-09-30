@@ -7,9 +7,21 @@
 *.asf
 !requirements.txt
 
-/data
-/models
-/figs
+# Keep the folder structure (via .gitkeep), ignore generated contents
+/data/**
+/models/**
+/figs/**
+!/data/**/
+!/models/**/
+!/figs/**/
+!**/.gitkeep
+
+# Tracked inputs
+!/data/walk.amc
+!/data/skeleton.asf
+
+# Local task notes
+/tasks/
 
 # Python
 __pycache__/
