@@ -1,0 +1,7 @@
+numpy
+scipy
+matplotlib
+torch
+transforms3d
+pygame
+PyOpenGL
