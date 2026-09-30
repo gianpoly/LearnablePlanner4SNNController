@@ -3,5 +3,5 @@ scipy
 matplotlib
 torch
 transforms3d
-pygame
+pygame-ce  # drop-in fork of pygame (still `import pygame`); ships Python 3.14 wheels
 PyOpenGL

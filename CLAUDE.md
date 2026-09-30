@@ -8,7 +8,7 @@ A research codebase that reproduces CMU motion-capture sequences (`.amc`/`.asf`)
 
 ## Running things
 
-No packaging, requirements file, test suite, or linter. Scripts are standalone and have hardcoded paths. `.venv` (Python 3.14, created with uv) has no packages installed yet. Dependencies, taken from the imports: `numpy scipy matplotlib torch transforms3d pygame PyOpenGL`.
+No packaging, requirements file, test suite, or linter. Scripts are standalone and have hardcoded paths. Install dependencies with `uv pip install -r requirements.txt` (see README). The requirement is `pygame-ce`, not `pygame`, because upstream pygame has no Python 3.14 wheel and fails to build without SDL2. The code still does `import pygame`.
 
 **Run every script from the repo root**, e.g. `python src/real_time_plan_SNN_recontr.py`:
 - Data paths are CWD-relative (`./data/...`, `./models/planner/...`, `./figs/...`).
