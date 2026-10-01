@@ -14,7 +14,7 @@ reconstr_targets = np.loadtxt("./data/reconstructed_targets.txt", delimiter=",")
 reconstr_angles = np.loadtxt("./data/reconstructed_angles.txt", delimiter=",")
 reconstr_speeds = np.loadtxt("./data/reconstructed_speeds.txt", delimiter=",")
 
-joint = 10  # DOF to inspect (51 = rtibia)
+joint = 20  # DOF to inspect (51 = rtibia)
 plt.figure()
 plt.plot(ground_truth_dataset.norm_fact*ground_truth_dataset.targets[:, joint])  # dataset targets are normalized, reconstructed ones are in degrees
 plt.plot(reconstr_targets[:, joint])
