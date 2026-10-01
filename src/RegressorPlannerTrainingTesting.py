@@ -7,11 +7,55 @@ import torch.nn.functional as F
 from torch import optim
 
 from RegressorHelpers import RegressorNet, MotionSequenceDataset, setup_regressor_testing_env, evaluate_regressor
+from controllers import AgentController
+from optimal_search_utils import read_controller_specs
+from dataset_utils import estim_deriv
 
-def train_regressor(motion_file, oversampling, hidden_neurons):
+def simulate_SNN_states(dataset: MotionSequenceDataset, specs_path: str, fps: int = 120, dt: float = 0.1) -> np.ndarray:
+    """
+    Run the SNN controllers open-loop on the planner's training targets and return the states they produce,
+    normalized the same way as dataset.X (speeds computed exactly as in the real-time closed loop)
+
+    :param dataset: Motion sequence dataset providing the targets and the normalization factors
+    :param specs_path: Path to the optimal controller specs found by the SNN controller search
+    :param fps: Frame rate of the motion sequence
+    :param dt: SNN integration timestep (ms)
+    :return: (np.array) frames x 2*DOF array of normalized angles and speeds, same layout as dataset.X
+    """
+    DOF_no = dataset.Y.shape[1]
+    targets = dataset.norm_fact*dataset.Y  # SNN works in degrees
+    angles = np.zeros_like(targets)
+    angles[0, :] = dataset.norm_fact*dataset.X[0, :DOF_no]
+    SNN_ctrlr = AgentController(dt, angles[0, :], specs_list=read_controller_specs(specs_path))
+
+    steps_per_frame = 1000/(fps*dt)
+    for frame_ind in range(angles.shape[0] - 1):
+        n_steps = round((frame_ind + 1)*steps_per_frame) - round(frame_ind*steps_per_frame)
+        for _ in range(n_steps):
+            SNN_ctrlr.update_state(targets[frame_ind, :])
+        angles[frame_ind + 1, :] = SNN_ctrlr.get_state()
+
+    norm_angles = angles/dataset.norm_fact
+    speeds = estim_deriv(norm_angles)/dataset.derivs_norm_fact
+    return np.concatenate((norm_angles, speeds), axis=1)
+
+
+def train_regressor(motion_file: str, oversampling: int, hidden_neurons: int, snn_specs_path: str | None = None, snn_angles: bool = False) -> None:
 
     recording_file = motion_file
     dataset = MotionSequenceDataset(recording_file, oversampling=oversampling)
+
+    # Optionally train on the states the SNN produces when reproducing the motion instead of the GT ones (targets stay GT)
+    model_suffix = ""
+    if snn_specs_path is not None:
+        DOF_no = dataset.Y.shape[1]
+        snn_states = simulate_SNN_states(dataset, snn_specs_path)
+        if snn_angles:
+            dataset.X = snn_states
+            model_suffix = "_snnstate"
+        else:
+            dataset.X[:, DOF_no:] = snn_states[:, DOF_no:]
+            model_suffix = "_snnspeed"
 
     X = torch.tensor(dataset.X, dtype=torch.float32)
     Y_target = torch.tensor(dataset.Y, dtype=torch.float32)
@@ -42,7 +86,7 @@ def train_regressor(motion_file, oversampling, hidden_neurons):
     plt.ylim([0, 0.1])
     plt.ylabel("MSE Loss")
     plt.xlabel("# Epochs")
-    plt.savefig(f'./figs/Loss_hid{net.hidden_neurons}_ov{dataset.oversampling}.svg')
+    plt.savefig(f'./figs/Loss_hid{net.hidden_neurons}_ov{dataset.oversampling}{model_suffix}.svg')
     plt.show()
 
     # Plot trained vs target comparison
@@ -58,7 +102,7 @@ def train_regressor(motion_file, oversampling, hidden_neurons):
         axs[joint].text(0.5, -0.9, f"Joint {joint}")
     plt.show()
 
-    PATH = f"./models/planner/Regressor_hid{net.hidden_neurons}_ov{dataset.oversampling}.pt"
+    PATH = f"./models/planner/Regressor_hid{net.hidden_neurons}_ov{dataset.oversampling}{model_suffix}.pt"
     torch.save(net.state_dict(), PATH)
 
 

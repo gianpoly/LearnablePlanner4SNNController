@@ -10,7 +10,7 @@ fps = 120
 deriv_window = 10  # same window as dataset_utils.estim_deriv (used to build the planner's training inputs)
 
 motion_sequence_file_path="./data/walk.amc"
-trained_planner_path="./models/planner/Regressor_hid128_ov0.pt"
+trained_planner_path="./models/planner/Regressor_hid128_ov0_snnstate.pt"
 
 ground_truth_dataset, net = setup_regressor_testing_env(motion_sequence_file_path, trained_planner_path)
 norm_fact = ground_truth_dataset.norm_fact
