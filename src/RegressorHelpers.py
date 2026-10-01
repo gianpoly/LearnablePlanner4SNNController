@@ -149,12 +149,10 @@ def setup_regressor_testing_env(motion_file, model_path):
 def query_regressor(state, network):
     # Query regressor network given the state of the character (angles and angular velocities)
     X_test = torch.tensor(state, dtype=torch.float32)
-    print(f'Input size is: {X_test.size(0)}')
     with torch.no_grad():
         Y_pred = network(X_test)
-    print(f'Output size is: {Y_pred.size(0)}')
 
-    return Y_pred
+    return Y_pred.numpy()
 
 
 def evaluate_regressor(dataset, network, query_frame):
