@@ -40,6 +40,32 @@ def simulate_SNN_states(dataset: MotionSequenceDataset, specs_path: str, fps: in
     return np.concatenate((norm_angles, speeds), axis=1)
 
 
+def fit_regressor(X: np.ndarray, Y: np.ndarray, hidden_neurons: int, epochs: int = 1000) -> tuple[RegressorNet, list]:
+    """
+    Fit a fresh planner on normalized states X and normalized targets Y (full-batch Adam, MSE loss)
+
+    :return: trained network and the loss of every epoch
+    """
+    X = torch.tensor(X, dtype=torch.float32)
+    Y_target = torch.tensor(Y, dtype=torch.float32)
+
+    net = RegressorNet(input_size=X.size(dim=1), hidden_size=hidden_neurons, output_size=Y_target.size(dim=1))
+    optimizer = optim.Adam(net.parameters(), lr=1e-3)
+    loss_fn = nn.MSELoss()
+
+    losses = []
+    for i in range(epochs):
+        Y_pred = net(X)
+        loss = loss_fn(Y_pred, Y_target)
+        losses.append(loss.detach())
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    return net, losses
+
+
 def train_regressor(motion_file: str, oversampling: int, hidden_neurons: int, snn_specs_path: str | None = None, snn_angles: bool = False) -> None:
 
     recording_file = motion_file
@@ -60,25 +86,7 @@ def train_regressor(motion_file: str, oversampling: int, hidden_neurons: int, sn
     X = torch.tensor(dataset.X, dtype=torch.float32)
     Y_target = torch.tensor(dataset.Y, dtype=torch.float32)
 
-    net = RegressorNet(input_size=X.size(dim=1), hidden_size=hidden_neurons, output_size=Y_target.size(dim=1))
-    optimizer = optim.Adam(net.parameters(), lr=1e-3)
-    loss_fn = nn.MSELoss()
-
-    losses = []
-    epochs = 1000
-    for i in range(epochs):
-        Y = net(X)
-        loss = loss_fn(Y, Y_target)
-        losses.append(loss.detach())
-        
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        # if i % int(epochs/4) == 0:
-        #     plt.figure()
-        #     plt.plot(losses)
-        #     plt.show()
+    net, losses = fit_regressor(dataset.X, dataset.Y, hidden_neurons)
 
     plt.figure()
     plt.plot(losses)
