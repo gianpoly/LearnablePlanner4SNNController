@@ -1,4 +1,4 @@
-# RegressionPlanner
+# Learnable Planner to drive SNN controllers for full-body motion reconstruction
 
 ![Closed-loop reconstruction of the walk clip, DOF 53 (rfoot)](reconstruction_dof53.gif)
 
