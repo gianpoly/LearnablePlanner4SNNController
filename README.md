@@ -1,5 +1,9 @@
 # RegressionPlanner
 
+![Closed-loop reconstruction of the walk clip, DOF 53 (rfoot)](reconstruction_dof53.gif)
+
+*A spiking-neural-network controller, driven by a learned planner, reproducing a CMU walk clip in closed loop (orange) against the mocap ground truth (blue). See [Visualization](#visualization).*
+
 ## Installation
 
 Requires Python 3.10+.
