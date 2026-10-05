@@ -89,7 +89,7 @@ To consume them, the AMC parser and helpers are pulled from [this repo](https://
 +-----------------------------+                 v
 | 5a. IO/3Dviewer.py          |  +---------------------------------+
 |     skeleton playback       |  | 5b. vis_queries.py              |
-+-----------------------------+  |     plot vs ground truth        |
++-----------------------------+  |     plots + 3D skeleton vs GT   |
                                  +---------------------------------+
 ```
 
@@ -105,8 +105,30 @@ To consume them, the AMC parser and helpers are pulled from [this repo](https://
    ```
    Re-run this step whenever the controller specs change, since the SNN speeds the planner learns from depend on them.
 4. **Run the closed loop:** set `trained_planner_path` in `src/real_time_plan_SNN_recontr.py` to the model to evaluate, then `python src/real_time_plan_SNN_recontr.py`. Each frame, the planner gets the SNN's own angles and speeds. The speed is the change over the last 10 frames, computed the same way as in training.
-5. **Inspect:** `python src/vis_queries.py` (set `joint` to the DOF to plot, and `trained_planner_path` to the same model).
+5. **Inspect:** `python src/vis_queries.py` (set `trained_planner_path` to the same model). See [Visualization](#visualization) below.
 
 On the walk clip, the SNN-trained planners give about half the closed-loop angle error of the GT-trained one (`_snnspeed` 7.4–8.6°, `_snnstate` 8.7–10.0°, GT 15.1–16.3° RMSE over 3 runs). The SNN's motor-neuron pool weights are random, so expect about ±1° between runs.
 
 Run all scripts from the repository root (e.g. `python src/real_time_plan_SNN_recontr.py`), since data, model and figure paths are relative to it. The `data/`, `models/` and `figs/` directories are not tracked and must be created/populated locally.
+
+## Visualization
+
+![Closed-loop reconstruction of the walk clip, DOF 53 (rfoot)](reconstruction_dof53.gif)
+
+`src/vis_queries.py` compares the closed-loop run (step 4) against the ground truth in one window:
+
+- **Targets (top left):** the piecewise-constant target angles from the dataset (blue) and the ones the planner produced in the closed loop (orange).
+- **Joint angles (bottom left):** the recorded mocap angle (blue) and the angle the SNN actually reached (orange). The dashed line marks the current frame.
+- **Skeleton (right):** both poses at the current frame, from forward kinematics on `data/skeleton.asf` (the same code path as `IO/3Dviewer.py`). The red dots mark the bone that the selected DOF moves. The camera follows the ground-truth root.
+
+The GIF shows DOF 53 (rfoot) over the full clip, at 4× slow motion. The SNN skeleton drifts away from the ground truth because the root translation (DOFs 0–2) is not tracked exactly in the closed loop. Press `r` to place the SNN pose on the ground-truth root and compare posture alone.
+
+| Input | Action |
+|---|---|
+| ← / → or the DOF box | previous / next DOF, or jump to a typed index |
+| Space | play / pause at real speed (120 fps, skipping frames if redraws are slow) |
+| `,` / `.` or the frame slider | step / scrub through frames |
+| `r` | toggle aligning the SNN root onto the ground-truth root |
+| Drag in the 3D panel | rotate the view |
+
+`joint` sets the DOF shown at start. To export a GIF instead of opening the window, set `gif_path` (e.g. `"./reconstruction_dof53.gif"`). It renders every frame at 30 fps, which takes about 2 minutes.

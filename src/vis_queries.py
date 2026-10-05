@@ -2,6 +2,7 @@ import sys
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation, PillowWriter
 from matplotlib.widgets import Slider, TextBox
 from mpl_toolkits.mplot3d.art3d import Line3D, Line3DCollection
 from RegressorHelpers import setup_regressor_testing_env
@@ -12,6 +13,8 @@ from amc_parser import parse_amc, parse_asf
 motion_sequence_file_path="./data/walk.amc"
 skeleton_file_path="./data/skeleton.asf"
 trained_planner_path="./models/planner/Regressor_hid128_ov0_dagger.pt"
+joint = 51  # DOF shown at start (51 = rtibia)
+gif_path = None  # e.g. "./reconstruction.gif": render every frame to a GIF instead of opening the interactive window
 
 
 ground_truth_dataset, net = setup_regressor_testing_env(motion_sequence_file_path, trained_planner_path)
@@ -101,9 +104,8 @@ ax_skel.set_ylabel("x")
 ax_skel.set_zlabel("y (up)")
 ax_skel.legend(loc="upper left")
 
-text_box = TextBox(fig.add_axes((0.08, 0.03, 0.05, 0.04)), "DOF (0-%d) " % (DOF_no - 1), initial="51")
+text_box = TextBox(fig.add_axes((0.08, 0.03, 0.05, 0.04)), "DOF (0-%d) " % (DOF_no - 1), initial=str(joint))
 frame_slider = Slider(fig.add_axes((0.25, 0.035, 0.5, 0.03)), "Frame ", 0, frames_no - 1, valinit=0, valstep=1)
-joint = 51  # DOF to inspect (51 = rtibia)
 frame = 0
 playing = False
 align_root = False  # draw the SNN skeleton on the ground-truth root, to compare posture without the root drift
@@ -210,4 +212,8 @@ fig.canvas.mpl_connect("key_press_event", on_key)
 show_joint(joint)
 show_frame(frame)
 
-plt.show()
+if gif_path:
+    gif_fps = 30  # GIFs can't play at the mocap's 120 fps, so this is 4x slow motion
+    FuncAnimation(fig, show_frame, frames=frames_no).save(gif_path, writer=PillowWriter(fps=gif_fps), dpi=60)
+else:
+    plt.show()
